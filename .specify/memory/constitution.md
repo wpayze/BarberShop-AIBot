@@ -43,7 +43,7 @@ A strict no-testing policy is enforced. The agent MUST NOT generate any unit tes
 
 ### III. Manual Git & Database Operations
 The agent's interaction with the version control system and database is strictly limited.
-- **Git**: The agent MUST NOT perform any Git operations (commit, push, merge, etc.). The developer handles all version control actions manually.
+- **Git**: The agent MUST NOT perform any Git operations (commit, push, merge, etc.). The developer handles all version control actions manually. Agent can only create new branches.
 - **Database**: The agent MUST NOT generate or execute database migrations (e.g., using an ORM's migration tool). The developer is solely responsible for all database schema changes and data migrations.
 
 ### IV. No Mock Data or Placeholders
