@@ -1,2 +1,7 @@
-﻿fastapi>=0.115.0
-uvicorn[standard]>=0.30.0
+﻿fastapi
+sqlalchemy
+alembic
+psycopg2-binary
+python-dotenv
+uvicorn[standard]
+dotenv
