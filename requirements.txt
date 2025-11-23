@@ -5,3 +5,6 @@ psycopg2-binary
 python-dotenv
 uvicorn[standard]
 dotenv
+bcrypt
+pydantic
+email-validator
