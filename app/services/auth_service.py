@@ -1,11 +1,17 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from app.schemas.auth import BusinessSignupRequest, BusinessSignupResponse
+from app.schemas.auth import (
+    BusinessSignupRequest,
+    BusinessSignupResponse,
+    LoginRequest,
+    LoginResponse,
+)
 from app.repositories.business_repository import BusinessRepository
 from app.repositories.business_user_repository import BusinessUserRepository
 from app.schemas.business import BusinessCreate
-from app.utils.security import hash_password
+from app.utils.security import hash_password, verify_password
+from app.utils.jwt import create_access_token
 
 
 class AuthService:
@@ -61,3 +67,26 @@ class AuthService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Signup failed: {str(e)}",
             )
+
+    @staticmethod
+    def login(db: Session, data: LoginRequest):
+        user = BusinessUserRepository.get_by_email(db, data.email)
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid email or password",
+            )
+
+        if not verify_password(data.password, user.passwordHash):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid email or password",
+            )
+
+        # Generate JWT
+        token = create_access_token(
+            {"sub": str(user.id), "businessId": str(user.businessId), "role": user.role}
+        )
+
+        return LoginResponse(accessToken=token, tokenType="bearer")

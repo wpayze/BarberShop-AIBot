@@ -13,3 +13,11 @@ class BusinessSignupResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+class LoginResponse(BaseModel):
+    accessToken: str
+    tokenType: str = "bearer"
