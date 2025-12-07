@@ -2,7 +2,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.schemas.staff import StaffCreate, StaffOut
+from app.schemas.staff import StaffCreate, StaffOut, StaffUpdate
 from app.services.staff_service import StaffService
 from app.utils.dependencies import get_current_user
 from app.db.session import get_db
@@ -51,3 +51,19 @@ def get_staff(
             detail="Staff not found.",
         )
     return staff
+
+
+@router.patch("/{staff_id}", response_model=StaffOut)
+def update_staff(
+    staff_id: UUID,
+    data: StaffUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    staff = StaffService.get_by_id(db, staff_id)
+    if not staff or staff.businessId != current_user.businessId:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Staff not found.",
+        )
+    return StaffService.update_staff(db, staff_id, data)

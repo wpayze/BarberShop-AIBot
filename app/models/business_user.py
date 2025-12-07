@@ -20,6 +20,7 @@ class BusinessUser(Base):
         nullable=False
     )
 
+    name = Column(String(150), nullable=False, default="default", server_default="default")
     email = Column(String(150), nullable=False, unique=True)
     passwordHash = Column(String(255), nullable=False)
 

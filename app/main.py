@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.routers.auth_router import router as auth_router
 from app.routers.staff_router import router as staff_router
 from app.routers.service_router import router as service_router
@@ -9,6 +11,18 @@ from app.routers.notification_log_router import router as notification_log_route
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,        
+    allow_credentials=True,
+    allow_methods=["*"], 
+    allow_headers=["*"],
+)
 
 @app.get("/", tags=["health"])
 def read_root():

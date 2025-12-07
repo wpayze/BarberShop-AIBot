@@ -25,6 +25,8 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
 def get_profile(current_user=Depends(get_current_user)):
     return {
         "id": current_user.id,
+        "name": current_user.name,
         "email": current_user.email,
         "role": current_user.role,
+        "businessId": current_user.businessId,
     }

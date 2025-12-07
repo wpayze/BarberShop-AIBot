@@ -7,6 +7,7 @@ class BusinessUserRepository:
     def create_admin(db: Session, email: str, password_hash: str, business_id):
         user = BusinessUser(
             businessId=business_id,
+            name="default",
             email=email,
             passwordHash=password_hash,
             role=UserRole.OWNER.value
