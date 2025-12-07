@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.service import Service
-from app.schemas.service import ServiceCreate
+from app.schemas.service import ServiceCreate, ServiceUpdate
 
 
 class ServiceRepository:
@@ -20,3 +20,11 @@ class ServiceRepository:
     @staticmethod
     def list_by_business(db: Session, business_id):
         return db.query(Service).filter(Service.businessId == business_id).all()
+
+    @staticmethod
+    def update(db: Session, service: Service, data: ServiceUpdate) -> Service:
+        updates = data.model_dump(exclude_unset=True)
+        for key, value in updates.items():
+            setattr(service, key, value)
+        db.flush()
+        return service

@@ -2,7 +2,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.schemas.service import ServiceCreate, ServiceOut
+from app.schemas.service import ServiceCreate, ServiceOut, ServiceUpdate
 from app.services.service_service import ServiceService
 from app.utils.dependencies import get_current_user
 from app.db.session import get_db
@@ -51,3 +51,19 @@ def get_service(
             detail="Service not found.",
         )
     return service
+
+
+@router.patch("/{service_id}", response_model=ServiceOut)
+def update_service(
+    service_id: UUID,
+    data: ServiceUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    service = ServiceService.get_by_id(db, service_id)
+    if not service or service.businessId != current_user.businessId:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Service not found.",
+        )
+    return ServiceService.update_service(db, service_id, data)

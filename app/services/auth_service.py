@@ -6,6 +6,7 @@ from app.schemas.auth import (
     BusinessSignupResponse,
     LoginRequest,
     LoginResponse,
+    UserUpdate,
 )
 from app.repositories.business_repository import BusinessRepository
 from app.repositories.business_user_repository import BusinessUserRepository
@@ -90,3 +91,37 @@ class AuthService:
         )
 
         return LoginResponse(accessToken=token, tokenType="bearer")
+
+    @staticmethod
+    def update_user(db: Session, user_id, data: UserUpdate):
+        user = BusinessUserRepository.get_by_id(db, user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        updates = data.model_dump(exclude_unset=True)
+
+        if "email" in updates:
+            existing = BusinessUserRepository.get_by_email(db, updates["email"])
+            if existing and str(existing.id) != str(user_id):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email already registered",
+                )
+
+        if "password" in updates:
+            updates["passwordHash"] = hash_password(updates.pop("password"))
+
+        try:
+            user = BusinessUserRepository.update(db, user, updates)
+            db.commit()
+            db.refresh(user)
+            return user
+        except Exception as exc:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Could not update user: {str(exc)}",
+            )

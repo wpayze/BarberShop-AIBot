@@ -25,3 +25,15 @@ class ServiceOut(ServiceBase):
 
     class Config:
         from_attributes = True
+
+
+class ServiceUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    durationMinutes: int | None = None
+    price: Decimal | None = None
+    category: str | None = None
+    isActive: bool | None = None
+
+    class Config:
+        extra = "forbid"
