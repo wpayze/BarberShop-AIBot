@@ -9,3 +9,4 @@ from .business_opening_hours import BusinessOpeningHours
 from .staff_schedule_override import StaffScheduleOverride
 from .notification_log import NotificationLog
 from .booking import Booking
+from .client import Client
