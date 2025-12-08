@@ -30,3 +30,7 @@ class BusinessUserRepository:
             setattr(user, key, value)
         db.flush()
         return user
+
+    @staticmethod
+    def list_by_business(db: Session, business_id) -> list[BusinessUser]:
+        return db.query(BusinessUser).filter(BusinessUser.businessId == business_id).all()

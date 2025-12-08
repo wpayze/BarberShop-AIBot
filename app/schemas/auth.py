@@ -1,4 +1,8 @@
+from uuid import UUID
+from datetime import datetime
 from pydantic import BaseModel, EmailStr
+
+from app.models.enums import UserRole
 
 
 class BusinessSignupRequest(BaseModel):
@@ -27,7 +31,30 @@ class LoginResponse(BaseModel):
 class UserUpdate(BaseModel):
     name: str | None = None
     email: EmailStr | None = None
-    password: str | None = None
+    role: UserRole | None = None
+    isActive: bool | None = None
+
+    class Config:
+        extra = "forbid"
+
+
+class UserOut(BaseModel):
+    id: UUID
+    businessId: UUID
+    name: str
+    email: EmailStr
+    role: str
+    isActive: bool
+    createdAt: datetime
+    updatedAt: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PasswordUpdate(BaseModel):
+    currentPassword: str
+    newPassword: str
 
     class Config:
         extra = "forbid"

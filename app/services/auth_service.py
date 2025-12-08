@@ -7,6 +7,7 @@ from app.schemas.auth import (
     LoginRequest,
     LoginResponse,
     UserUpdate,
+    PasswordUpdate,
 )
 from app.repositories.business_repository import BusinessRepository
 from app.repositories.business_user_repository import BusinessUserRepository
@@ -93,9 +94,15 @@ class AuthService:
         return LoginResponse(accessToken=token, tokenType="bearer")
 
     @staticmethod
-    def update_user(db: Session, user_id, data: UserUpdate):
+    def update_user(db: Session, user_id, data: UserUpdate, allowed_business_id=None):
         user = BusinessUserRepository.get_by_id(db, user_id)
         if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        if allowed_business_id and str(user.businessId) != str(allowed_business_id):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found",
@@ -111,9 +118,6 @@ class AuthService:
                     detail="Email already registered",
                 )
 
-        if "password" in updates:
-            updates["passwordHash"] = hash_password(updates.pop("password"))
-
         try:
             user = BusinessUserRepository.update(db, user, updates)
             db.commit()
@@ -124,4 +128,35 @@ class AuthService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Could not update user: {str(exc)}",
+            )
+
+    @staticmethod
+    def list_users(db: Session, business_id):
+        return BusinessUserRepository.list_by_business(db, business_id)
+
+    @staticmethod
+    def change_password(db: Session, user_id, data: PasswordUpdate):
+        user = BusinessUserRepository.get_by_id(db, user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        if not verify_password(data.currentPassword, user.passwordHash):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid current password",
+            )
+
+        try:
+            new_hash = hash_password(data.newPassword)
+            BusinessUserRepository.update(db, user, {"passwordHash": new_hash})
+            db.commit()
+            return {"message": "Password updated successfully"}
+        except Exception as exc:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Could not update password: {str(exc)}",
             )
